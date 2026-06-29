@@ -1,0 +1,220 @@
+
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart-Soko Optimizer</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #28a745; border: none; color: white; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+
+        /* Style mpya ya Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+<div style="background-color: #333; padding: 15px; display: flex; justify-content: space-between; align-items: center; color: white; border-radius: 4px; margin-bottom: 20px;">
+    <h3 style="margin: 0;">Smart-Soko Dashboard</h3>
+    <div>
+        {% if session.get('user_id') %}
+            <span style="margin-right: 15px; color: #28a745; font-weight: bold;">Karibu, {{ session.get('username') }} (Wakala)</span>
+            <a href="/logout" style="color: white; background-color: #dc3545; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">Toka (Logout)</a>
+        {% else %}
+            <a href="/login" style="color: white; background-color: #007bff; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px;">Ingia (Login)</a>
+            <a href="/register" style="color: white; background-color: #28a745; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">Sajili Akaunti</a>
+        {% endif %}
+    </div>
+</div>
+{% if session.get('user_id') %}
+<div class="container">
+    <h2>smart_soko: Ingiza Taarifa</h2>
+    <form action="/submit" method="POST">
+        <div class="form-group">
+            <label for="agent_name">Jina la Wakala:</label>
+            <input type="text" id="agent_name" name="agent_name" placeholder="Ingiza jina lako" required>
+        </div>
+
+        <div class="form-group">
+            <label for="soko_location">Mahali/Soko lilipo:</label>
+            <input type="text" id="soko_location" name="soko_location" placeholder="Mfano: Kariakoo, Mabibo" required>
+        </div>
+
+        <div class="form-group">
+            <label for="zao_name">Jina la Zao:</label>
+            <input type="text" id="zao_name" name="zao_name" placeholder="Mfano: Mahindi, Mpunga" required>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 10px;">
+            <div style="flex: 2;">
+                <label for="bei_ya_jumla">Bei ya Jumla (TSH):</label>
+                <input type="number" id="bei_ya_jumla" name="bei_ya_jumla" placeholder="0.00" required>
+            </div>
+            <div style="flex: 1;">
+                <label for="kipimo">Kipimo:</label>
+                <select id="kipimo" name="kipimo">
+                    <option value="Gunia 100kg">Gunia 100kg</option>
+                    <option value="Kilo (kg)">Kilo (kg)</option>
+                    <option value="Tani">Tani</option>
+                    <option value="Sado">Sado</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="hali_ya_soko">Hali ya Soko:</label>
+            <select id="hali_ya_soko" name="hali_ya_soko">
+                <option value="Imetulia">Imetulia</option>
+                <option value="Inapanda">Inapanda</option>
+                <option value="Inashuka">Inashuka</option>
+                <option value="Adimu">Adimu</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tarehe_iliyoingizwa">Tarehe ya Taarifa:</label>
+            <input type="date" id="tarehe_iliyoingizwa" name="tarehe_iliyoingizwa" required>
+        </div>
+
+        <button type="submit">Hifadhi Taarifa</button>
+    </form>
+</div>
+{% else %}
+    <div style="background-color: #f4bd09; color: #856404; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+        <strong>Ilani:</strong> Wewe umeingia kama mgeni (Mkulima/Mnunuzi). Unaweza kutafuta na kuangalia bei tu. Kama wewe ni Wakala, tafadhali bonyeza <strong>Login</strong> juu ili kuingiza au kurekebisha bei.
+    </div>
+{% endif %}
+    <hr style="margin-top: 40px;">
+
+    <!-- SEHEMU YA KUONESHA DATA ZILIZOHIFADHIWA -->
+    <h2>Data Zilizopo Sokoni</h2>
+    <div style="margin-bottom: 5%;max-width: 350px; display: flex; justify-content: flex-start;">
+    <input type="text" id="searchInput" onkeyup="tafutaSokoni()" placeholder="Tafuta kwa jina la zao, soko, au wakala..." style="padding: 12px; width: 100%; border: 2px solid #007bff; border-radius: 6px; font-size: 16px;">
+    </div>
+
+<div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+    
+    <div style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #28a745, #1e7e34); color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; opacity: 0.8;">Bei Zilizohakikiwa</h4>
+        <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ kadi_approved }}</p>
+    </div>
+
+    <div style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #ffc107, #d39e00); color: #333; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; opacity: 0.8;">Zinasubiri Uhakiki</h4>
+        <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold; color: {% if kadi_pending > 0 %}#dc3545{% else %}#333{% endif %};">
+            {{ kadi_pending }}
+        </p>
+    </div>
+
+    <div style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; opacity: 0.8;">Bei ya Juu Zaidi</h4>
+        <p style="margin: 10px 0 0 0; font-size: 24px; font-weight: bold; white-space: nowrap;">TSH {{ "{:,.0f}".format(kadi_bei_juu) }}</p>
+        <span style="font-size: 12px; opacity: 0.9;">Zao: {{ kadi_zao_juu }}</span>
+    </div>
+
+    <div style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #6c757d, #495057); color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h4 style="margin: 0; font-size: 14px; text-transform: uppercase; opacity: 0.8;">Mawakala Kazi</h4>
+        <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold;">{{ kadi_mawakala }}</p>
+    </div>
+
+</div>
+
+    <table border="1" style="width:100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+        
+                <th>Wakala</th>
+                <th>Soko</th>
+                <th>Zao</th>
+                <th>Bei (TSH)</th>
+                <th>Hali</th>
+                <th>Tarehe</th>
+                {% if session.get('user_id') %}<th>Uhakiki</th><th>Vitendo</th>{% endif %}
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in bei_za_mazao %}
+            <tr>
+                <td>{{ m.agent_name }}</td>
+                <td>{{ m.soko_location }}</td>
+                <td>{{ m.zao_name }}</td>
+                <td>{{ "{:,.0f}".format(m.bei_ya_jumla) }}</td>
+                <td>{{ m.hali_ya_soko }}</td>
+                <td>{{ m.tarehe_iliyoingizwa }}</td>
+        
+                <td>
+        {% if m.status == 'pending' %}
+            <span style="color: orange; font-weight: bold;">Inasubiri Uhakiki</span>
+        {% else %}
+            <span style="color: green; font-weight: bold;">Imehakikiwa</span>
+        {% endif %}
+    </td>
+    
+    <td>
+    {% if session.get('role') == 'admin' %}
+                    
+    {% if m.status == 'pending' %}
+    <a href="/approve/{{ m.id }}" style="background-color: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 5px;">Thibitisha</a>
+    {% endif %}
+    
+        <a href="/edit/{{ m.id }}" style="color: #007bff; text-decoration: none; font-weight: bold; margin-right: 15px;">Badili</a>
+        <a href="/delete/{{ m.id }}" onclick="return confirm('Je, una uhakika?')" style="color: red; text-decoration: none; font-weight: bold;">Futa</a>
+    {% else %}
+        <span style="color: #999; font-style: italic;">Huna Ruhusa</span>
+    {% endif %}
+</td>
+</td>
+            </tr>
+            </tr>
+            {% endfor %}
+            <script>
+function tafutaSokoni() {
+    // 1. Pata kile ambacho mtumiaji amekiandika na kikidhinishe kuwa herufi ndogo (lowercase)
+    let input = document.getElementById("searchInput");
+    let filter = input.value.toLowerCase();
+    
+    // 2. Kamata Table na mistari yote ya data (tr)
+    let table = document.querySelector("table tbody");
+    let rows = table.getElementsByTagName("tr");
+
+    // 3. Loop kwenye kila mstari kuona kama herufi zinasoma
+    for (let i = 0; i < rows.length; i++) {
+        let showRow = false;
+        let cells = rows[i].getElementsByTagName("td");
+        
+        // Kagua nguzo za: Wakala, Soko, na Zao (Nguzo ya 0, 1, na 2)
+        for (let j = 0; j < 3; j++) {
+            if (cells[j]) {
+                let textValue = cells[j].textContent || cells[j].innerText;
+                if (textValue.toLowerCase().indexOf(filter) > -1) {
+                    showRow = true;
+                    break;
+                }
+            }
+        }
+        
+        // Kama neno lipo, onyesha mstari. Kama halipo, fanya usionekane
+        if (showRow) {
+            rows[i].style.display = "";
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+}
+</script>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

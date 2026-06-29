@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart-Soko - Rekebisha Taarifa</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 600px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #007bff; border: none; color: white; font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0069d9; }
+        .cancel-btn { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Rekebisha Taarifa za Soko</h2>
+    <form action="/update/{{ b.id }}" method="POST">
+        <div class="form-group">
+            <label>Jina la Wakala:</label>
+            <input type="text" name="agent_name" value="{{ b.agent_name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Mahali/Soko lilipo:</label>
+            <input type="text" name="soko_location" value="{{ b.soko_location }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Jina la Zao:</label>
+            <input type="text" name="zao_name" value="{{ b.zao_name }}" required>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 10px;">
+            <div style="flex: 2;">
+                <label>Bei ya Jumla (TSH):</label>
+                <input type="number" name="bei_ya_jumla" value="{{ b.bei_ya_jumla }}" required>
+            </div>
+            <div style="flex: 1;">
+                <label>Kipimo:</label>
+                <select name="kipimo">
+                    <option value="Gunia 100kg" {% if b.kipimo == 'Gunia 100kg' %}selected{% endif %}>Gunia 100kg</option>
+                    <option value="Kilo (kg)" {% if b.kipimo == 'Kilo (kg)' %}selected{% endif %}>Kilo (kg)</option>
+                    <option value="Tani" {% if b.kipimo == 'Tani' %}selected{% endif %}>Tani</option>
+                    <option value="Sado" {% if b.kipimo == 'Sado' %}selected{% endif %}>Sado</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Hali ya Soko:</label>
+            <select name="hali_ya_soko">
+                <option value="Imetulia" {% if b.hali_ya_soko == 'Imetulia' %}selected{% endif %}>Imetulia</option>
+                <option value="Inapanda" {% if b.hali_ya_soko == 'Inapanda' %}selected{% endif %}>Inapanda</option>
+                <option value="Inashuka" {% if b.hali_ya_soko == 'Inashuka' %}selected{% endif %}>Inashuka</option>
+                <option value="Adimu" {% if b.hali_ya_soko == 'Adimu' %}selected{% endif %}>Adimu</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Tarehe ya Taarifa:</label>
+            <input type="date" name="tarehe_iliyoingizwa" value="{{ b.tarehe }}" required>
+        </div>
+
+        <button type="submit">Hifadhi Mabadiliko</button>
+        <a href="/" class="cancel-btn">Ghairi (Rudi Nyuma)</a>
+    </form>
+</div>
+
+</body>
+</html>
