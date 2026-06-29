@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 
 # --- CONFIGURATIONS ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/smart_soko'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://avnadmin:<redacted>@pg-2808b14d-smart-soko.c.aivencloud.com:19982/defaultdb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'smart_soko_siri_yetu_kali'  # Siri ya kulinda session
 db = SQLAlchemy(app)
