@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
 
 # --- CONFIGURATIONS ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://avnadmin:<redacted>@pg-2808b14d-smart-soko.c.aivencloud.com:19982/defaultdb?sslmode=require'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://avnadmin:<redacted>@pg-2bdb72f7-smart-soko.l.aivencloud.com:19982/defaultdb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'smart_soko_siri_yetu_kali'  # Siri ya kulinda session
 db = SQLAlchemy(app)
@@ -16,8 +17,9 @@ class watumiaji(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-# Tutaweka 'admin' au 'wakala'. Kimasanduku inakuwa 'wakala' mtu akisajili
+    # Tutaweka 'admin' au 'wakala'. Kimasanduku inakuwa 'wakala' mtu akisajili
     role = db.Column(db.String(20), nullable=False, default='wakala')
+
 
 # --- 2. TABLE YA BEI ZA MAZAO ---
 class bei_za_mazao(db.Model):
@@ -53,7 +55,6 @@ def index():
         zao_la_juu = max_bei_record.zao_name if max_bei_record else "Hakuna"
         
         # Kadi ya 4: Idadi ya mawakala wa kipekee (Unique Agents)
-        # Hapa tunatumia db.distinct kuhesabu mawakala bila kurudia majina
         mawakala_distinct = db.session.query(bei_za_mazao.agent_name).distinct().count()
         
         # Tunatuma hizi data zote kwenda kwenye HTML
@@ -67,7 +68,7 @@ def index():
                                kadi_mawakala=mawakala_distinct)
     
     except Exception as e:
-        return f"Imefeli kusoma data kutoka MySQL: {e}"
+        return f"Imefeli kusoma data kutoka kwenye Database: {e}"
 
 
 # --- 4. ROUTE YA USAJILI (REGISTER) ---
@@ -91,6 +92,7 @@ def register():
     return render_template('register.html')
 
 
+# --- 5. ROUTE YA LOGIN ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -102,7 +104,7 @@ def login():
         if mtumiaji and check_password_hash(mtumiaji.password, password):
             session['user_id'] = mtumiaji.id
             session['username'] = mtumiaji.username
-            session['role'] = mtumiaji.role # <--- Hii ni muhimu sana!
+            session['role'] = mtumiaji.role
             return redirect(url_for('index'))
         else:
             return "Username au Password sio sahihi!"
@@ -130,7 +132,7 @@ def submit():
                 return "Makosa: Bei ya jumla lazima iwe kubwa kuliko 0!"
 
             taarifa_mpya = bei_za_mazao(
-                agent_name=session['username'],  # Jina linatoka kwenye login moja kwa moja
+                agent_name=session['username'],
                 soko_location=request.form['soko_location'],
                 zao_name=request.form['zao_name'],
                 bei_ya_jumla=bei_input,
@@ -147,10 +149,9 @@ def submit():
             return f"Data haijaingia! Tatizo: {e}"
 
 
-# --- ROUTE YA KUFUTA (ADMIN TU) ---
+# --- 8. ROUTE YA KUFUTA (ADMIN TU) ---
 @app.route('/delete/<int:id>')
 def delete(id):
-    # Kagua kama ameingia NA kama yeye ni Admin
     if 'user_id' not in session or session.get('role') != 'admin':
         return "Samahani! Huna mamlaka ya kufuta taarifa. Hii ni kazi ya Admin tu!"
     try:
@@ -161,7 +162,8 @@ def delete(id):
     except Exception as e:
         return f"Imefeli: {e}"
 
-# --- ROUTE YA KUFUNGUA UKURASA WA EDIT (ADMIN TU) ---
+
+# --- 9. ROUTE YA EDIT (ADMIN TU) ---
 @app.route('/edit/<int:id>')
 def edit(id):
     if 'user_id' not in session or session.get('role') != 'admin':
@@ -171,21 +173,23 @@ def edit(id):
         return render_template('edit.html', b=bidhaa)
     except Exception as e:
         return f"Imefeli: {e}"
-    
+
+
+# --- 10. ROUTE YA APPROVE (ADMIN TU) ---
 @app.route('/approve/<int:id>')
 def approve(id):
     if 'user_id' not in session or session.get('role') != 'admin':
         return "Huna ruhusa hii!"
     try:
         data = bei_za_mazao.query.get_or_404(id)
-        data.status = 'approved' # Imepitishwa na admin
+        data.status = 'approved'
         db.session.commit()
         return redirect(url_for('index'))
     except Exception as e:
         return f"Imeshindikana kuidhinisha: {e}"
 
 
-# --- 10. ROUTE YA KUHIFADHI MABADILIKO (UPDATE) ---
+# --- 11. ROUTE YA KUHIFADHI MABADILIKO (UPDATE) ---
 @app.route('/update/<int:id>', methods=['POST'])
 def update(id):
     if 'user_id' not in session:
@@ -214,14 +218,12 @@ def update(id):
             return "Makosa: Ingiza namba halali kwenye bei!"
         except Exception as e:
             return f"Mabadiliko hayajafanikiwa! Tatizo: {e}"
-
+        
 
 # --- INATENGENEZA TABLE KIOTOMATIKI ---
 with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    import os
-    # Hii inaruhusu seva ya mtandaoni kupanga port yenyewe, isipopo weka 5000
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=False) #
+    app.run(host='0.0.0.0', port=port, debug=False)
