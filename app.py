@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 
 # --- CONFIGURATIONS ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://avnadmin:<redacted>@pg-2bdb72f7-smart-soko.l.aivencloud.com:19982/defaultdb?sslmode=require'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://avnadmin:<redacted>@pg-2bdb72f7-smart-soko.l.aivencloud.com:19982/defaultdb?sslmode=require'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'smart_soko_siri_yetu_kali'  # Siri ya kulinda session
 db = SQLAlchemy(app)
